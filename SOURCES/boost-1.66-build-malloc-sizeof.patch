@@ -1,0 +1,25 @@
+From 35ce23a327648a225f5c768a79890a761b9dbe27 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <boost@kayari.org>
+Date: Wed, 10 Oct 2018 13:47:13 +0100
+Subject: [PATCH] Use correct sizeof in malloc call
+
+This is allocating space for `nel` objects of type `ITEM*` so it should use `sizeof(ITEM*)` not `sizeof(ITEM**)`.
+
+In practice the values are the same, but using the correct type is better anyway, and now matches the same calculation in the `memset` call in the following statement.
+---
+ src/engine/hash.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/engine/hash.c b/src/engine/hash.c
+index 2fa12030b8..f3dcef88a5 100644
+--- a/tools/build/src/engine/hash.c
++++ b/tools/build/src/engine/hash.c
+@@ -248,7 +248,7 @@ static void hashrehash( struct hash * hp )
+         BJAM_FREE( (char *)hp->tab.base );
+ 
+     hp->tab.nel = hp->items.nel * hp->bloat;
+-    hp->tab.base = (ITEM * *)BJAM_MALLOC( hp->tab.nel * sizeof( ITEM * * ) );
++    hp->tab.base = (ITEM * *)BJAM_MALLOC( hp->tab.nel * sizeof( ITEM * ) );
+ 
+     memset( (char *)hp->tab.base, '\0', hp->tab.nel * sizeof( ITEM * ) );
+ 

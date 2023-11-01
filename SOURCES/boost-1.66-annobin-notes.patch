@@ -1,0 +1,11 @@
+--- boost_1_66_0/tools/build/src/tools/gcc.jam~	2019-11-18 14:24:04.111324445 +0000
++++ boost_1_66_0/tools/build/src/tools/gcc.jam	2019-11-18 14:24:07.314336031 +0000
+@@ -635,7 +635,7 @@
+ 
+ actions compile.asm
+ {
+-    "$(CONFIG_COMMAND)" $(LANG) $(OPTIONS) $(USER_OPTIONS) -D$(DEFINES) -I"$(INCLUDES)" -c -o "$(<)" "$(>)"
++    "$(CONFIG_COMMAND)" $(LANG) $(OPTIONS) $(USER_OPTIONS) -D$(DEFINES) -I"$(INCLUDES)" -Wa,--generate-missing-build-notes=yes -c -o "$(<)" "$(>)"
+ }
+ 
+ ###
