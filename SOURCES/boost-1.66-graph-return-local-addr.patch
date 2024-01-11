@@ -1,0 +1,32 @@
+From 5e61a97a0b56d3d4121d3cbb6b85032f9839545a Mon Sep 17 00:00:00 2001
+From: nre <nre@ableton.com>
+Date: Thu, 22 Dec 2016 13:25:35 +0100
+Subject: [PATCH] Fix compiler error with release builds on VS2015
+
+When using MSVC compiler optimization, using param_not_found() causes
+compiler error C4172: returning address of local variable or temporary
+---
+ include/boost/graph/named_function_params.hpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/include/boost/graph/named_function_params.hpp b/include/boost/graph/named_function_params.hpp
+index a9a9add6c..4842dc954 100644
+--- a/include/boost/graph/named_function_params.hpp
++++ b/include/boost/graph/named_function_params.hpp
+@@ -228,6 +228,7 @@ BOOST_BGL_DECLARE_NAMED_PARAMS
+   };
+ 
+   struct param_not_found {};
++  static param_not_found g_param_not_found;
+ 
+   template <typename Tag, typename Args>
+   struct get_param_type: 
+@@ -237,7 +238,7 @@ BOOST_BGL_DECLARE_NAMED_PARAMS
+   inline
+   const typename lookup_named_param_def<Tag, Args, param_not_found>::type&
+   get_param(const Args& p, Tag) {
+-    return lookup_named_param_def<Tag, Args, param_not_found>::get(p, param_not_found());
++    return lookup_named_param_def<Tag, Args, param_not_found>::get(p, g_param_not_found);
+   }
+ 
+   template <class P, class Default> 

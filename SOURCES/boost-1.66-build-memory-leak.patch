@@ -1,0 +1,28 @@
+From 8ff11a8eccc41914478e92231500fc47fefa6779 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <boost@kayari.org>
+Date: Wed, 10 Oct 2018 17:17:10 +0100
+Subject: [PATCH] Fix memory leak
+
+If vsnprintf returns -1 then the buffer should be freed before returning.
+---
+ src/engine/debugger.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/engine/debugger.c b/src/engine/debugger.c
+index 3c811b4557..d849d064a9 100644
+--- a/tools/build/src/engine/debugger.c
++++ b/tools/build/src/engine/debugger.c
+@@ -860,10 +860,11 @@ static const char * debug_format_message( const char * format, va_list vargs )
+         result = vsnprintf( buf, sz, format, args );
+         #endif
+         va_end( args );
++        if ( 0 <= result && result < sz )
++	    return buf;
++        free( buf );
+         if ( result < 0 )
+             return 0;
+-        if ( result < sz ) return buf;
+-        free( buf );
+         sz = result + 1;
+     }
+ }
