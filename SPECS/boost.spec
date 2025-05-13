@@ -42,7 +42,7 @@ Name: boost
 %global real_name boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.75.0
-Release: 8%{?dist}
+Release: 10%{?dist}
 License: Boost and MIT and Python
 
 # Replace each . with _ in %%{version}
@@ -156,6 +156,10 @@ Patch94: boost-1.73-locale-empty-vector.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1923740
 # https://github.com/boostorg/build/issues/696
 Patch95: boost-1.75.0-boost-build-fix.patch
+
+# https://issues.redhat.com/browse/RHEL-67973
+# https://github.com/chriskohlhoff/asio/issues/790
+Patch98: boost-1.75-asio-fix.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -672,15 +676,16 @@ a number of significant features and is now developed independently.
 %setup -q -n %{toplev_dirname}
 find ./boost -name '*.hpp' -perm /111 | xargs chmod a-x
 
-%patch15 -p0
-%patch51 -p1
-%patch96 -p1
-%patch97 -p1
-%patch83 -p1
-%patch88 -p1
-%patch93 -p1
-%patch94 -p1
-%patch95 -p1
+%patch -P15 -p0
+%patch -P51 -p1
+%patch -P96 -p1
+%patch -P97 -p1
+%patch -P83 -p1
+%patch -P88 -p1
+%patch -P93 -p1
+%patch -P94 -p1
+%patch -P95 -p1
+%patch -P98 -p1
 
 %build
 %set_build_flags
@@ -825,9 +830,6 @@ mv ${RPM_BUILD_ROOT}${MPI_HOME}/lib/boost-python%{python3_version}/mpi.so \
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_{python,{w,}serialization}*
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_numpy*
 
-# Remove cmake files (some of these are duplicates of the generic bits anyway).
-rm -r ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake
-
 %{_openmpi_unload}
 export PATH=/bin${PATH:+:}$PATH
 %endif
@@ -854,9 +856,6 @@ mv ${RPM_BUILD_ROOT}${MPI_HOME}/lib/boost-python%{python3_version}/mpi.so \
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_{python,{w,}serialization}*
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_numpy*
 
-# Remove cmake files (some of these are duplicates of the generic bits anyway).
-rm -r ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake
-
 %{_mpich_unload}
 export PATH=/bin${PATH:+:}$PATH
 %endif
@@ -881,9 +880,6 @@ echo ============================= install serial ==================
 [ -f $RPM_BUILD_ROOT%{_libdir}/libboost_thread.so ] # Must be present
 rm -f $RPM_BUILD_ROOT%{_libdir}/libboost_thread.so
 install -p -m 644 $(basename %{SOURCE1}) $RPM_BUILD_ROOT%{_libdir}/
-
-# Remove cmake files until we know somebody wants them.
-rm -r $RPM_BUILD_ROOT/%{_libdir}/cmake
 
 echo ============================= install Boost.Build ==================
 (cd tools/build
@@ -1147,6 +1143,7 @@ fi
 %files devel
 %license LICENSE_1_0.txt
 %{_includedir}/%{name}
+%{_libdir}/cmake
 %{_libdir}/libboost_atomic.so
 %{_libdir}/libboost_chrono.so
 %{_libdir}/libboost_container.so
@@ -1214,6 +1211,7 @@ fi
 
 %files openmpi-devel
 %license LICENSE_1_0.txt
+%{_libdir}/openmpi/lib/cmake
 %{_libdir}/openmpi/lib/libboost_mpi.so
 %{_libdir}/openmpi/lib/libboost_graph_parallel.so
 
@@ -1245,6 +1243,7 @@ fi
 
 %files mpich-devel
 %license LICENSE_1_0.txt
+%{_libdir}/mpich/lib/cmake
 %{_libdir}/mpich/lib/libboost_mpi.so
 %{_libdir}/mpich/lib/libboost_graph_parallel.so
 
@@ -1282,6 +1281,13 @@ fi
 %{_mandir}/man1/b2.1*
 
 %changelog
+* Thu Jan 16 2025 Patrick Palka <ppalka@redhat.com> - 1.75.0-10
+- Re-add the CMake config files provided by Boost
+
+* Fri Nov 22 2024 Patrick Palka <ppalka@redhat.com> - 1.75.0-9
+- Apply upstream Boost.Asio patch to resolve RHEL-67973
+- Fix %patch directive compatibility with RPM 4.20
+
 * Fri Jun 24 2022 Jonathan Wakely <jwakely@redhat.com> - 1.75.0-8
 - Restore Provides for boost-python3-devel
 
