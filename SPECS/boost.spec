@@ -42,7 +42,7 @@ Name: boost
 %global real_name boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.75.0
-Release: 10%{?dist}
+Release: 12%{?dist}
 License: Boost and MIT and Python
 
 # Replace each . with _ in %%{version}
@@ -160,6 +160,10 @@ Patch95: boost-1.75.0-boost-build-fix.patch
 # https://issues.redhat.com/browse/RHEL-67973
 # https://github.com/chriskohlhoff/asio/issues/790
 Patch98: boost-1.75-asio-fix.patch
+
+# https://issues.redhat.com/browse/RHEL-89888
+# https://github.com/boostorg/filesystem/issues/254
+Patch99: boost-1.75.0-copy_file-exdev.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -686,6 +690,7 @@ find ./boost -name '*.hpp' -perm /111 | xargs chmod a-x
 %patch -P94 -p1
 %patch -P95 -p1
 %patch -P98 -p1
+%patch -P99 -p1
 
 %build
 %set_build_flags
@@ -826,9 +831,14 @@ mv ${RPM_BUILD_ROOT}${MPI_HOME}/lib/boost-python%{python3_version}/mpi.so \
    ${RPM_BUILD_ROOT}%{python3_sitearch}/openmpi/boost/
 %endif
 
+# Using 'b2 stage' does not fix the paths in these files, so do it manually
+sed -i -e 's|get_filename_component(_BOOST_INCLUDEDIR "${_BOOST_CMAKEDIR}/.*"|get_filename_component(_BOOST_INCLUDEDIR "${_BOOST_CMAKEDIR}/../../../../include"|' ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake/*/*-config.cmake
+
 # Remove generic parts of boost that were built for dependencies.
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_{python,{w,}serialization}*
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_numpy*
+rm -rf ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake/boost_{python,{w,}serialization}*
+rm -rf ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake/boost_numpy*
 
 %{_openmpi_unload}
 export PATH=/bin${PATH:+:}$PATH
@@ -852,9 +862,14 @@ mv ${RPM_BUILD_ROOT}${MPI_HOME}/lib/boost-python%{python3_version}/mpi.so \
    ${RPM_BUILD_ROOT}%{python3_sitearch}/mpich/boost/
 %endif
 
+# Using 'b2 stage' does not fix the paths in these files, so do it manually
+sed -i -e 's|get_filename_component(_BOOST_INCLUDEDIR "${_BOOST_CMAKEDIR}/.*"|get_filename_component(_BOOST_INCLUDEDIR "${_BOOST_CMAKEDIR}/../../../../include"|' ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake/*/*-config.cmake
+
 # Remove generic parts of boost that were built for dependencies.
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_{python,{w,}serialization}*
 rm -f ${RPM_BUILD_ROOT}${MPI_HOME}/lib/libboost_numpy*
+rm -rf ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake/boost_{python,{w,}serialization}*
+rm -rf ${RPM_BUILD_ROOT}${MPI_HOME}/lib/cmake/boost_numpy*
 
 %{_mpich_unload}
 export PATH=/bin${PATH:+:}$PATH
@@ -1281,6 +1296,12 @@ fi
 %{_mandir}/man1/b2.1*
 
 %changelog
+* Tue Jul 8 2025 Patrick Palka <ppalka@redhat.com> - 1.75.0-12
+- Fix the CMake config file for openmpi and mpich (RHEL-97588)
+
+* Tue May 13 2025 Jonathan Wakely <jwakely@redhat.com> - 1.75.0-11
+- Add patch for cross-device filesystem::copy_file (RHEL-89888)
+
 * Thu Jan 16 2025 Patrick Palka <ppalka@redhat.com> - 1.75.0-10
 - Re-add the CMake config files provided by Boost
 
