@@ -46,7 +46,7 @@ Name: boost
 %global real_name boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.83.0
-Release: 5%{?dist}
+Release: 7%{?dist}
 License: BSL-1.0 AND MIT AND Python-2.0.1
 
 # Replace each . with _ in %%{version}
@@ -108,6 +108,7 @@ Requires: %{name}-test%{?_isa} = %{version}-%{release}
 Requires: %{name}-thread%{?_isa} = %{version}-%{release}
 Requires: %{name}-timer%{?_isa} = %{version}-%{release}
 Requires: %{name}-type_erasure%{?_isa} = %{version}-%{release}
+Requires: %{name}-url%{?_isa} = %{version}-%{release}
 Requires: %{name}-wave%{?_isa} = %{version}-%{release}
 
 %if %{with python3}
@@ -161,6 +162,9 @@ Patch6: boost-1.81-phoenix-multiple-defn.patch
 Patch7: boost-1.81.0-random-test-fixes.patch
 
 Patch8: boost-1.83-regex-test-fixes.patch
+
+# https://github.com/boostorg/thread/pull/408
+Patch9: boost-1.83-fix-no-member-named_that_error.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -1291,6 +1295,14 @@ fi
 %{_mandir}/man1/b2.1*
 
 %changelog
+* Tue Jan 27 2026 Patrick Palka <ppalka@redhat.com> - 1.83.0-7
+- Add boost-url dependency to metapackage
+  Resolves: RHEL-124169
+
+* Wed Oct 01 2025 Federico Pellegrin <fede@evolware.org> - 1.83.0-6
+- Backport patch to fix build of boost thread on Clang19 and later
+  Resolves: RHEL-118607
+
 * Tue Oct 29 2024 Troy Dawson <tdawson@redhat.com> - 1.83.0-5
 - Bump release for October 2024 mass rebuild:
   Resolves: RHEL-64018
