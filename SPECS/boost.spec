@@ -42,7 +42,7 @@ Name: boost
 %global real_name boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.75.0
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: Boost and MIT and Python
 
 # Replace each . with _ in %%{version}
@@ -165,9 +165,13 @@ Patch98: boost-1.75-asio-fix.patch
 # https://github.com/boostorg/filesystem/issues/254
 Patch99: boost-1.75.0-copy_file-exdev.patch
 
-# https://issues.redhat.com/browse/RHEL-120655
+# https://issues.redhat.com/browse/RHEL-116553
 # https://github.com/boostorg/json/issues/717
 Patch100: boost-1.75.0-json-endian.patch
+
+# https://redhat.atlassian.net/browse/RHEL-154173
+# https://github.com/boostorg/thread/pull/408
+Patch101: boost-1.75-fix-no-member-named_that_error.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -696,6 +700,7 @@ find ./boost -name '*.hpp' -perm /111 | xargs chmod a-x
 %patch -P98 -p1
 %patch -P99 -p1
 %patch -P100 -p1
+%patch -P101 -p1
 
 %build
 %set_build_flags
@@ -1301,8 +1306,12 @@ fi
 %{_mandir}/man1/b2.1*
 
 %changelog
-* Thu Nov 4 2025 Patrick Palka <ppalka@redhat.com> - 1.75.0-13
-- Add Boost.JSON patch for detecting endianness (RHEL-120655)
+* Fri Apr 17 2026 Patrick Palka <ppalka@redhat.com> - 1.75.0-14
+- Backport patch to fix build of boost thread on Clang19 and later
+  Resolves: RHEL-154173
+
+* Thu Oct 9 2025 Patrick Palka <ppalka@redhat.com> - 1.75.0-13
+- Add Boost.JSON patch for detecting endianness (RHEL-116553)
 
 * Tue Jul 8 2025 Patrick Palka <ppalka@redhat.com> - 1.75.0-12
 - Fix the CMake config file for openmpi and mpich (RHEL-97588)
