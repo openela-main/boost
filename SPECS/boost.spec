@@ -46,7 +46,7 @@ Name: boost
 %global real_name boost
 Summary: The free peer-reviewed portable C++ source libraries
 Version: 1.83.0
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: BSL-1.0 AND MIT AND Python-2.0.1
 
 # Replace each . with _ in %%{version}
@@ -165,6 +165,9 @@ Patch8: boost-1.83-regex-test-fixes.patch
 
 # https://github.com/boostorg/thread/pull/408
 Patch9: boost-1.83-fix-no-member-named_that_error.patch
+
+# https://github.com/boostorg/context/pull/312
+Patch10: boost-1.83-context-arm64-bti-hint.patch
 
 %bcond_with tests
 %bcond_with docs_generated
@@ -1295,6 +1298,10 @@ fi
 %{_mandir}/man1/b2.1*
 
 %changelog
+* Wed Apr 22 2026 Jonathan Wakely <jwakely@redhat.com> - 1.83.0-8
+- Add patch for arm64 BTI hints in Boost.Context asm
+  Resolves: RHEL-50164
+
 * Tue Jan 27 2026 Patrick Palka <ppalka@redhat.com> - 1.83.0-7
 - Add boost-url dependency to metapackage
   Resolves: RHEL-124169
